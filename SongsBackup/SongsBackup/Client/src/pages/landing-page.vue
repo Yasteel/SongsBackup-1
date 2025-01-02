@@ -1,17 +1,48 @@
 ﻿<script setup lang="ts">
   import navBar from '../components/nav-bar.vue';
-  import { ref } from 'vue'
+  import { ref, computed } from 'vue';
   import { axiosService } from "@/Services/AxiosService.ts";
   
-  const imageSrc = ref('/images/landing-page-img.jpg');
+  const fileInput = ref(null);
+  const selectedFiles = ref<File[]>([]);
   
   const showSecond = function(){
       document.querySelector('#second').scrollIntoView({behavior: "smooth"});
   }
   
-  const openFile = function(){
+  function openFile(){
     document.getElementById('file-select').click();
   }
+  
+  function handleFileChange(e: Event){
+    const target = e.target as HTMLInputElement;
+    if(target.files){
+      selectedFiles.value = Array.from(target.files);
+    }
+  }
+
+  const uploadFiles = async () => {
+    if (!selectedFiles.value.length) return;
+
+    const formData = new FormData();
+    selectedFiles.value.forEach(file => formData.append('files', file));
+
+    try {
+      const response = await fetch('/api/upload/upload-files', {
+        method: 'POST',
+        body: formData,
+      });
+
+      const result = await response.json();
+      console.log('Upload successful:', result);
+      alert('Files uploaded successfully!');
+    } catch (error) {
+      console.error('Error uploading files:', error);
+      alert('Failed to upload files. Please try again.');
+    } finally {
+      selectedFiles.value = [];
+    }
+  };
 </script>
 
 <template>
@@ -33,8 +64,9 @@
         </div>
         <div class="second" id="second">
           <div class="file-container">
-            <input type="file" id="file-select" webkitdirectory directory multiple/>
+            <input @change="handleFileChange" type="file" id="file-select" ref="fileInput" multiple/>
             <button @click="openFile" id="file-select-button"><i class="fa-solid fa-upload"></i> Select your Files</button>
+            <button @click="uploadFiles">Upload files</button>
           </div>          
         </div>
       </div>

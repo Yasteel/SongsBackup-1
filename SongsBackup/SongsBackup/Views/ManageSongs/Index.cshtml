@@ -1,0 +1,15 @@
+@{
+    ViewBag.Title = "title";
+    Layout = "_Layout";
+}
+
+@section scripts{
+    <script src="~/pages/manage-songs.js" type="module"></script>
+}
+
+@section css{
+    <link rel="stylesheet" href="~/pages/assets/manage-songs.css" asp-append-version="true"/>
+    <link rel="stylesheet" href="~/pages/assets/nav-bar.css" asp-append-version="true"/>
+}
+
+<manage-songs />

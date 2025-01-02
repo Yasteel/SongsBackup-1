@@ -1,6 +1,6 @@
 <template>
   <div class="navbar">
-    <h2>Songs Backup</h2>
+    <h4><i class="fa-solid fa-music"></i> Songs Backup</h4>
     <div class="circle">
       <img :src="image" alt="" v-if="image != null" width="36" height="36">
       <div class="username">
@@ -17,7 +17,7 @@
   });
 </script>
 
-<style scoped>
+<style >
   .navbar{
     width: 100%;
     height: 4rem;
