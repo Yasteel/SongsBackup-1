@@ -14,10 +14,9 @@ namespace SongsBackup
 
             builder.Services.AddControllersWithViews();
 
-            builder.Services.AddScoped<IFileService, FileService>();
             builder.Services.AddScoped<ISpotifyService, SpotifyService>();
             builder.Services.AddScoped<ISessionService, SessionService>();
-            builder.Services.AddScoped<IBlobService, BlobService>();
+            builder.Services.AddScoped<ISongService, SongService>();
             builder.Services.AddScoped<ITableService, TableService>();
             
             builder.Services.AddHttpContextAccessor();

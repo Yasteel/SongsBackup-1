@@ -28,16 +28,16 @@
     selectedFiles.value.forEach(file => formData.append('files', file));
 
     try {
-      const response = await fetch('/api/upload/upload-files', {
+      const response = await fetch('/api/songs/upload-songs', {
         method: 'POST',
         body: formData,
       });
 
-      const result = await response.json();
-      console.log('Upload successful:', result);
-      alert('Files uploaded successfully!');
+      if(response.ok){
+        window.location.href = '/ManageSongs/Index';
+      }
+      
     } catch (error) {
-      console.error('Error uploading files:', error);
       alert('Failed to upload files. Please try again.');
     } finally {
       selectedFiles.value = [];
