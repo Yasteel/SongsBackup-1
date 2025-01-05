@@ -37,8 +37,6 @@ namespace SongsBackup.Controllers.Api
                 uploadedFileUrls.Add(fileUrl);
             }
 
-            // TODO: Trigger processing of the uploaded files here
-
             return Ok(new { Files = uploadedFileUrls });
         }
         
