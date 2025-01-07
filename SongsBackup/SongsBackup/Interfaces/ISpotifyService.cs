@@ -10,7 +10,7 @@
 
         bool IsTokenExpired();
         
-        Task<string?> SearchSongsAsync(MetadataModel songObject);
+        Task<List<Items>?> SearchSongsAsync(MetadataModel songObject);
 
         Task<PlaylistCreatedResponse?> CreatePlaylist(CreatePlaylistRequestModel model);
 

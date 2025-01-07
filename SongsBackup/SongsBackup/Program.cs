@@ -1,10 +1,9 @@
-using Microsoft.AspNetCore.Http.Features;
-
 namespace SongsBackup
 {
-    using SongsBackup.Interfaces;
-    using SongsBackup.Models.SpotifyModels;
-    using SongsBackup.Services;
+    using Interfaces;
+    using Models.SpotifyModels;
+    using Profiles;
+    using Services;
 
     public class Program
     {
@@ -21,11 +20,8 @@ namespace SongsBackup
             
             builder.Services.AddHttpContextAccessor();
             
-            // allows for multipart form data with a limit of 100MB
-            // builder.Services.Configure<FormOptions>(options =>
-            // {
-            //     options.MultipartBodyLengthLimit = 104857600;
-            // });
+            // Add Mapping Profiles
+            builder.Services.AddAutoMapper(typeof(SpotifyProfile).Assembly);
             
             builder.Services.AddHttpClient("SpotifyClient", client =>
             {

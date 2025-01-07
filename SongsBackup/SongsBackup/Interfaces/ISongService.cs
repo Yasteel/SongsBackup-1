@@ -1,12 +1,10 @@
 ﻿namespace SongsBackup.Interfaces
 {
-    using SongsBackup.Models;
+    using Models.SpotifyModels.Dto;
 
     public interface ISongService
     {
-        Task<List<string>> GetSongsAsync();
-
-        List<MetadataModel> ProcessSongs(List<string> songs);
+        Task<List<SpotifyTrackDto>> ReadAllMetaDataAsync();
 
         Task<string> UploadSongs(IFormFile file);
 

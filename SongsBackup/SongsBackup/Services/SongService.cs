@@ -1,73 +1,64 @@
-﻿
+﻿using SongsBackup.Models.SpotifyModels.Dto;
+
 namespace SongsBackup.Services
 {
+    using AutoMapper;
     using Azure.Storage.Blobs.Models;
     using Azure.Storage.Blobs;
-
     using Interfaces;
-
-    using SongsBackup.Models;
+    using Models;
+    using Models.SpotifyModels;
 
     public class SongService : ISongService
     {
+        private readonly ISpotifyService _spotifyService;
+        private readonly IMapper _mapper;
         private readonly BlobServiceClient _blobServiceClient;
         private const string BlobContainerName = "songs-backup";
 
-        public SongService(IConfiguration configuration)
+        public SongService(IConfiguration configuration, ISpotifyService spotifyService, IMapper mapper)
         {
             var blobConnection = configuration.GetConnectionString("Azurite");
 
             _blobServiceClient = new (blobConnection);
+            _spotifyService = spotifyService;
+            _mapper = mapper;
         }
         
-        public async Task<List<string>> GetSongsAsync()
+        public async Task<List<SpotifyTrackDto>> ReadAllMetaDataAsync()
         {
-            var files = new List<string>();
+            var blobContainer = this._blobServiceClient.GetBlobContainerClient(BlobContainerName);
+            List<Items> songsObject = new ();
 
-            try
+            await foreach (var blobItem in blobContainer.GetBlobsAsync())
             {
-                // Get reference to the container
-                BlobContainerClient containerClient = _blobServiceClient.GetBlobContainerClient(BlobContainerName);
+                var blobClient = blobContainer.GetBlobClient(blobItem.Name);
+                var fileMetadata = await ReadMetadataAsync(blobClient);
+                var tracks = await _spotifyService.SearchSongsAsync(fileMetadata);
 
-                // Ensure the container exists
-                if (await containerClient.ExistsAsync())
+                if (tracks != default)
                 {
-                    // List blobs in the container
-                    await foreach (BlobItem blobItem in containerClient.GetBlobsAsync())
-                    {
-                        files.Add(blobItem.Name);
-                    }
-                }
-                else
-                {
-                    Console.WriteLine($"Container '{BlobContainerName}' does not exist.");
+                    songsObject.Add(tracks.First());
                 }
             }
-            catch (Exception ex)
-            {
-                Console.WriteLine($"Error retrieving files: {ex.Message}");
-            }
-
-            return files;
-        }
-        
-        public List<MetadataModel> ProcessSongs(List<string> songs)
-        {
-            List<MetadataModel> songsObject = new ();
             
-            foreach (var song in songs)
+            return _mapper.Map<List<SpotifyTrackDto>>(songsObject);
+        }
+        
+        private async Task<MetadataModel> ReadMetadataAsync(BlobClient blobClient)
+        {
+            var memoryStream = new MemoryStream();
+            await blobClient.DownloadToAsync(memoryStream);
+            memoryStream.Position = 0;
+            
+            var file = TagLib.File.Create(new StreamFileAbstraction(blobClient.Name, memoryStream, memoryStream));
+            
+            return new MetadataModel
             {
-                var tfile = TagLib.File.Create(song);
-                songsObject.Add(new ()
-                {
-                    Title = tfile.Tag.Title,
-                    Album = tfile.Tag.Album,
-                    Artist = tfile.Tag.Performers.ToArray()
-                    
-                });
-            }
-
-            return songsObject;
+                Title = file.Tag.Title,
+                Album = file.Tag.Album,
+                Artist = string.Join(",", file.Tag.Performers.ToArray())
+            };
         }
         
         public async Task<string> UploadSongs(IFormFile file)
@@ -80,6 +71,28 @@ namespace SongsBackup.Services
                 await blobClient.UploadAsync(stream, new BlobHttpHeaders { ContentType = file.ContentType });
             }
             return blobClient.Uri.ToString();
+        }
+    }
+
+    internal class StreamFileAbstraction : TagLib.File.IFileAbstraction
+    {
+        public string Name { get; set; }
+        
+        public Stream ReadStream { get; set; }
+        
+        public Stream WriteStream { get; set; }
+        
+        
+        public StreamFileAbstraction(string name, MemoryStream readStream, MemoryStream writeStream)
+        {
+            Name = name;
+            ReadStream = readStream;
+            WriteStream = writeStream;
+        }
+        
+        public void CloseStream(Stream stream)
+        {
+            stream.Close();
         }
     }
 }

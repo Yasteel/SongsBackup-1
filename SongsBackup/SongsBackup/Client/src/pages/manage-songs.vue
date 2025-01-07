@@ -2,15 +2,28 @@
   import navBar from '../components/nav-bar.vue';
   import { onMounted, ref } from 'vue';
   
-  const songs = ref(null);
+  // Todo: Add id to SpotifyResponse interface
+  // Todo: Create function to fetch user playlists and display them
+  // Todo: Conditionally display add to playlist button based on which select is selected
+  // Todo: Add functionality to select all songs
+  // Todo: Make Tabs functional and display songs that do not have search results in the second tab
+  // Todo: Add functionality to add songs to playlist
+  // Todo: Add functionality to create playlist
+  
+  interface SpotifyResponse{
+    title: string;
+    artist: string;
+    album: string;
+    albumArt: string;
+  }
+  
+  const songs = ref<SpotifyResponse[]>([]);
   
   onMounted(async () => {
     const result = await getSongs();
     if(result){
-      songs.value = result;
+      songs.value = result.songs;
     }
-
-    console.log(songs.value);
   });
   
   const getSongs = async () => {
@@ -46,87 +59,17 @@
               </div>
             </div>
             <div class="song-list">
-              <div class="song">
+              <div class="song" v-for="song in songs">
                 <div class="select">
                   <i class="fa-regular fa-square-check"></i>
                 </div>
                 <div class="image">
-                  <img src="https://cdn-images.dzcdn.net/images/cover/92e6cfa59e6d58e2956b3a0f35d00ccd/0x1900-000000-80-0-0.jpg" alt="bad habits">
+                  <img :src="song.albumArt" alt="bad habits">
                 </div>
                 <div class="info">
-                  <p class="title">Bad Habits</p>
-                  <p>Ed Sheeran feat. Bring me the Horizon</p>
-                  <p>Album</p>
-                  <button class="add-to-playlist">Add to Playlist</button>
-                </div>
-              </div>
-              <div class="song">
-                <div class="select">
-                  <i class="fa-regular fa-square-check"></i>
-                </div>
-                <div class="image">
-                  <img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcS0Ps-iJrvB8xF7MGM7EZ7oGzrcDySqwnlrVA&s" alt="Throne">
-                </div>
-                <div class="info">
-                  <p class="title">Throne</p>
-                  <p>Bring me the Horizon</p>
-                  <p>Album</p>
-                  <button class="add-to-playlist">Add to Playlist</button>
-                </div>
-              </div>
-              <div class="song">
-                <div class="select">
-                  <i class="fa-regular fa-square-check"></i>
-                </div>
-                <div class="image">
-                  <img src="https://images.genius.com/03348fda2bf03706cef6c61790f30b7a.300x300x1.png" alt="line in the sand">
-                </div>
-                <div class="info">
-                  <p class="title">A line in the sand</p>
-                  <p>Linkin Park</p>
-                  <p>The Hunting Party</p>
-                  <button class="add-to-playlist">Add to Playlist</button>
-                </div>
-              </div>
-              <div class="song">
-                <div class="select">
-                  <i class="fa-regular fa-square-check"></i>
-                </div>
-                <div class="image">
-                  <img src="https://cdn-images.dzcdn.net/images/cover/92e6cfa59e6d58e2956b3a0f35d00ccd/0x1900-000000-80-0-0.jpg" alt="bad habits">
-                </div>
-                <div class="info">
-                  <p class="title">Bad Habits</p>
-                  <p>Ed Sheeran feat. Bring me the Horizon</p>
-                  <p>Album</p>
-                  <button class="add-to-playlist">Add to Playlist</button>
-                </div>
-              </div>
-              <div class="song">
-                <div class="select">
-                  <i class="fa-regular fa-square-check"></i>
-                </div>
-                <div class="image">
-                  <img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcS0Ps-iJrvB8xF7MGM7EZ7oGzrcDySqwnlrVA&s" alt="Throne">
-                </div>
-                <div class="info">
-                  <p class="title">Throne</p>
-                  <p>Bring me the Horizon</p>
-                  <p>Album</p>
-                  <button class="add-to-playlist">Add to Playlist</button>
-                </div>
-              </div>
-              <div class="song">
-                <div class="select">
-                  <i class="fa-regular fa-square-check"></i>
-                </div>
-                <div class="image">
-                  <img src="https://images.genius.com/03348fda2bf03706cef6c61790f30b7a.300x300x1.png" alt="line in the sand">
-                </div>
-                <div class="info">
-                  <p class="title">A line in the sand</p>
-                  <p>Linkin Park</p>
-                  <p>The Hunting Party</p>
+                  <p class="title">{{ song.title }}</p>
+                  <p>{{ song.artist }}</p>
+                  <p>{{ song.album }}</p>
                   <button class="add-to-playlist">Add to Playlist</button>
                 </div>
               </div>

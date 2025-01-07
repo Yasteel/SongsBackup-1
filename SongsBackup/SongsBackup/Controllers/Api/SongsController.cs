@@ -59,10 +59,9 @@ namespace SongsBackup.Controllers.Api
         [HttpGet("get-songs")]
         public async Task<IActionResult> GetFiles()
         {
-            var songs = await this._songService.GetSongsAsync();
-            var processedSongs = this._songService.ProcessSongs(songs);
+            var songs = await this._songService.ReadAllMetaDataAsync();
             
-            return this.Ok(new { Message = "Songs retrieved successfully", Songs = processedSongs });
+            return this.Ok(new { Songs = songs });
         }
         
     }

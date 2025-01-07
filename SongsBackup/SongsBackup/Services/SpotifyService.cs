@@ -41,7 +41,7 @@
             return JsonConvert.DeserializeObject<ProfileResponse>(content);
         }
 
-        public async Task<string?> SearchSongsAsync(MetadataModel songObject)
+        public async Task<List<Items>?> SearchSongsAsync(MetadataModel songObject)
         {
             var searchQuery = this.BuildSearchQuery(songObject);
             var token = this.sessionService.GetSessionData();
@@ -55,12 +55,18 @@
             if (!response.IsSuccessStatusCode)
             {
                 Console.WriteLine(response.StatusCode);
-                return response.StatusCode.ToString();
+                return default;
             }
 
             var content = await response.Content.ReadAsStringAsync();
-            var result = JsonConvert.DeserializeObject<SearchResponse>(content);
-            return content;
+            var searchResponse = JsonConvert.DeserializeObject<SearchResponse>(content);
+
+            if (searchResponse == null)
+            {
+                return default;
+            }
+            
+            return searchResponse.tracks.Items.ToList();
         }
 
         public async Task<PlaylistCreatedResponse?> CreatePlaylist(CreatePlaylistRequestModel model)
