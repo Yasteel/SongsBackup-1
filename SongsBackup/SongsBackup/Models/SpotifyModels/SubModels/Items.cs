@@ -1,7 +1,7 @@
-﻿namespace SongsBackup.Models.SpotifyModels
-{
-    using Newtonsoft.Json;
+﻿using Newtonsoft.Json;
 
+namespace SongsBackup.Models.SpotifyModels.SubModels
+{
     public class Items
     {
         [JsonProperty("album")]

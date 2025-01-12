@@ -1,30 +1,34 @@
-﻿namespace SongsBackup.Services
+﻿using AutoMapper;
+using SongsBackup.Models.SpotifyModels.Dto;
+
+namespace SongsBackup.Services
 {
+    using Newtonsoft.Json;
+    using Interfaces;
+    using Models;
+    using Models.SpotifyModels;
+    using Models.SpotifyModels.RequestModel;
+    using Models.SpotifyModels.SubModels;
     using System.Text;
     using System.Net.Http.Headers;
 
-    using Newtonsoft.Json;
-
-    using SongsBackup.Interfaces;
-    using SongsBackup.Models;
-    using SongsBackup.Models.SpotifyModels;
-    using SongsBackup.Models.SpotifyModels.RequestModel;
-
     public class SpotifyService : ISpotifyService
     {
-        private readonly IHttpClientFactory clientFactory;
-        private readonly ISessionService sessionService;
+        private readonly IHttpClientFactory _clientFactory;
+        private readonly ISessionService _sessionService;
+        private readonly IMapper _mapper;
 
-        public SpotifyService(IHttpClientFactory clientFactory, ISessionService sessionService)
+        public SpotifyService(IHttpClientFactory clientFactory, ISessionService sessionService, IMapper mapper)
         {
-            this.clientFactory = clientFactory;
-            this.sessionService = sessionService;
+            _clientFactory = clientFactory;
+            _sessionService = sessionService;
+            _mapper = mapper;
         }
         
         public async Task<ProfileResponse?> GetProfile()
         {
-            var token = this.sessionService.GetSessionData();
-            var client = this.clientFactory.CreateClient();
+            var token = _sessionService.GetSessionData();
+            var client = _clientFactory.CreateClient();
             
             client.BaseAddress = new Uri(SpotifyConstants.BaseUri);
             client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token.AccessToken);
@@ -44,8 +48,8 @@
         public async Task<List<Items>?> SearchSongsAsync(MetadataModel songObject)
         {
             var searchQuery = this.BuildSearchQuery(songObject);
-            var token = this.sessionService.GetSessionData();
-            var client = this.clientFactory.CreateClient();
+            var token = this._sessionService.GetSessionData();
+            var client = this._clientFactory.CreateClient();
 
             client.BaseAddress = new Uri(SpotifyConstants.BaseUri);
             client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token.AccessToken);
@@ -71,8 +75,8 @@
 
         public async Task<PlaylistCreatedResponse?> CreatePlaylist(CreatePlaylistRequestModel model)
         {
-            var token = this.sessionService.GetSessionData();
-            var client = this.clientFactory.CreateClient();
+            var token = _sessionService.GetSessionData();
+            var client = _clientFactory.CreateClient();
             client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token.AccessToken);
 
             var userId = "3zwfzfzi022aum4p7ri3qe9n0";
@@ -91,10 +95,10 @@
 
         }
 
-        public async Task<UserPlaylistResponse?> GetUserPlaylists()
+        public async Task<List<UserPlaylistDto>?> GetUserPlaylists()
         {
-            var token = this.sessionService.GetSessionData();
-            var client = this.clientFactory.CreateClient();
+            var token = _sessionService.GetSessionData();
+            var client = _clientFactory.CreateClient();
             
             client.BaseAddress = new Uri(SpotifyConstants.BaseUri);
             client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token.AccessToken);
@@ -108,17 +112,29 @@
             }
             
             var content = await response.Content.ReadAsStringAsync();
-            return JsonConvert.DeserializeObject<UserPlaylistResponse>(content);
+            var playlistResponse =  JsonConvert.DeserializeObject<UserPlaylistResponse>(content);
+
+            if (playlistResponse == null)
+            {
+                return null;
+            }
+            
+            return _mapper.Map<List<UserPlaylistDto>>(playlistResponse.Items);
         }
 
-        public async Task<object?> AddToPlaylist(string playlistId, AddToPlaylistRequestModel songs)
+        public async Task<object?> AddToPlaylist(AddToPlaylistDto model)
         {
-            var token = this.sessionService.GetSessionData();
-            var client = this.clientFactory.CreateClient();
+            if (model.Uris == null || model.PlaylistId == null)
+            {
+                return null;
+            }
+            
+            var token = _sessionService.GetSessionData();
+            var client = _clientFactory.CreateClient();
             client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token.AccessToken);
 
-            var stringContent = new StringContent(JsonConvert.SerializeObject(songs), Encoding.UTF8, "application/json");
-            var response = await client.PostAsync($"{SpotifyConstants.BaseUri}playlists/{playlistId}/tracks", stringContent);
+            var stringContent = new StringContent(JsonConvert.SerializeObject(model.Uris), Encoding.UTF8, "application/json");
+            var response = await client.PostAsync($"{SpotifyConstants.BaseUri}playlists/{model.PlaylistId}/tracks", stringContent);
 
             if (!response.IsSuccessStatusCode)
             {
@@ -132,7 +148,7 @@
 
         public bool IsTokenExpired()
         {
-            var token = this.sessionService.GetSessionData();
+            var token = this._sessionService.GetSessionData();
             var expires = DateTime.Parse(token.ExpiresAt);
 
             return expires >= DateTime.Now;

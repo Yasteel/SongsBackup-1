@@ -1,8 +1,10 @@
 ﻿namespace SongsBackup.Interfaces
 {
-    using SongsBackup.Models;
-    using SongsBackup.Models.SpotifyModels;
-    using SongsBackup.Models.SpotifyModels.RequestModel;
+    using Models;
+    using Models.SpotifyModels;
+    using Models.SpotifyModels.Dto;
+    using Models.SpotifyModels.RequestModel;
+    using Models.SpotifyModels.SubModels;
 
     public interface ISpotifyService
     {
@@ -14,9 +16,9 @@
 
         Task<PlaylistCreatedResponse?> CreatePlaylist(CreatePlaylistRequestModel model);
 
-        Task<UserPlaylistResponse?> GetUserPlaylists();
+        Task<List<UserPlaylistDto>?> GetUserPlaylists();
 
-        Task<object> AddToPlaylist(string playlistId, AddToPlaylistRequestModel songs);
+        Task<object?> AddToPlaylist(AddToPlaylistDto model);
     }
 }
 

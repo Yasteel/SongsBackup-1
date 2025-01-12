@@ -1,4 +1,6 @@
-﻿namespace SongsBackup.Models.SpotifyModels
+﻿using SongsBackup.Models.SpotifyModels.SubModels;
+
+namespace SongsBackup.Models.SpotifyModels
 {
     using Newtonsoft.Json;
 

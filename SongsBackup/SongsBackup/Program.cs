@@ -21,7 +21,7 @@ namespace SongsBackup
             builder.Services.AddHttpContextAccessor();
             
             // Add Mapping Profiles
-            builder.Services.AddAutoMapper(typeof(SpotifyProfile).Assembly);
+            builder.Services.AddAutoMapper(typeof(SpotifySearchProfile).Assembly);
             
             builder.Services.AddHttpClient("SpotifyClient", client =>
             {

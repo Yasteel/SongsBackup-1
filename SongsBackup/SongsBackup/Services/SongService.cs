@@ -1,13 +1,12 @@
-﻿using SongsBackup.Models.SpotifyModels.Dto;
-
-namespace SongsBackup.Services
+﻿namespace SongsBackup.Services
 {
     using AutoMapper;
     using Azure.Storage.Blobs.Models;
     using Azure.Storage.Blobs;
     using Interfaces;
     using Models;
-    using Models.SpotifyModels;
+    using Models.SpotifyModels.Dto;
+    using Models.SpotifyModels.SubModels;
 
     public class SongService : ISongService
     {
@@ -25,7 +24,7 @@ namespace SongsBackup.Services
             _mapper = mapper;
         }
         
-        public async Task<List<SpotifyTrackDto>> ReadAllMetaDataAsync()
+        public async Task<List<SongSearchResultDto>> ReadAllMetaDataAsync()
         {
             var blobContainer = this._blobServiceClient.GetBlobContainerClient(BlobContainerName);
             List<Items> songsObject = new ();
@@ -42,7 +41,7 @@ namespace SongsBackup.Services
                 }
             }
             
-            return _mapper.Map<List<SpotifyTrackDto>>(songsObject);
+            return _mapper.Map<List<SongSearchResultDto>>(songsObject);
         }
         
         private async Task<MetadataModel> ReadMetadataAsync(BlobClient blobClient)

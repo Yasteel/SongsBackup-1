@@ -1,7 +1,7 @@
-﻿namespace SongsBackup.Models.SpotifyModels
+﻿using Newtonsoft.Json;
+
+namespace SongsBackup.Models.SpotifyModels.SubModels
 {
-    using Newtonsoft.Json;
-    
     public class Tracks
     {
         [JsonProperty("href")]

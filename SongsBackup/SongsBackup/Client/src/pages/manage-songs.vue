@@ -2,27 +2,41 @@
   import navBar from '../components/nav-bar.vue';
   import { onMounted, ref } from 'vue';
   
-  // Todo: Add id to SpotifyResponse interface
-  // Todo: Create function to fetch user playlists and display them
-  // Todo: Conditionally display add to playlist button based on which select is selected
-  // Todo: Add functionality to select all songs
   // Todo: Make Tabs functional and display songs that do not have search results in the second tab
-  // Todo: Add functionality to add songs to playlist
   // Todo: Add functionality to create playlist
+  // Todo: On Adding to playlist - check if songs exist in playlist and do not add duplicates
+  // Todo: Create modal for request confirmation and alerting user to request status (also for errors such as no playlists selected)
   
-  interface SpotifyResponse{
+  interface SpotifySongResponse{
     title: string;
     artist: string;
     album: string;
     albumArt: string;
+    uri: string;
+    isSelected: boolean;
   }
   
-  const songs = ref<SpotifyResponse[]>([]);
+  interface SpotifyPlaylistResponse{
+    name: string;
+    id: string;
+    uri: string; 
+  }
+  
+  const songs = ref<SpotifySongResponse[]>([]);
+  const playlists = ref<SpotifyPlaylistResponse[]>([]);
+  const selectedPlaylist = ref<string>('');
+  const allSongsSelected = ref<boolean>(false);
   
   onMounted(async () => {
-    const result = await getSongs();
-    if(result){
-      songs.value = result.songs;
+    const songResult = await getSongs();
+    const playlistResult = await getPlaylists();
+    
+    if(songResult){
+      songs.value = songResult.songs;
+    }
+    
+    if(playlistResult){
+      playlists.value = playlistResult.playlists;
     }
   });
   
@@ -37,11 +51,68 @@
       return null;
     }
   };
+  
+  const getPlaylists = async () => {
+    try{
+      const response = await fetch('/api/songs/get-playlists');
+      if(response.ok){
+        return await response.json();
+      }
+    }catch (error) {
+      console.error(error);
+      return null;
+    }
+  };
+  
+  const selectPlaylist = (e: Event) => {
+    document.querySelector('.playlist-content.selected')?.classList.remove('selected');
+    (e.target as HTMLElement).classList.add('selected');
+    selectedPlaylist.value = (e.target as HTMLElement).id;
+  }
+  
+  const selectSong = (uri: string) => {
+    const index = songs.value.findIndex((song) => song.uri == uri);
+    songs.value[index].isSelected = !songs.value[index].isSelected;
+
+    const selectedSongs = songs.value.filter((song) => song.isSelected);
+    allSongsSelected.value = songs.value.length === selectedSongs.length;
+  }
+  
+  const selectAllSongs = () => {
+    let selectSongs: boolean = !allSongsSelected.value;
+
+    songs.value.forEach((song) => {
+      song.isSelected = selectSongs;
+    });
+    
+    allSongsSelected.value = !allSongsSelected.value;
+  }
+  
+  const addSongsToPlaylist = () => {
+    const selectedSongs = songs.value.filter((song) => song.isSelected).map( song => song.uri);
+    console.log(selectedSongs);
+    console.log(selectedPlaylist.value);
+    
+    if(selectedPlaylist.value && selectedSongs.length > 0){
+      fetch('/api/songs/add-to-playlist', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          uris: selectedSongs,
+          playlistId: selectedPlaylist.value
+        })
+      });
+    }
+  }
+
 </script>
 
 <template>
   <div class="main">
     <navBar />
+    
     <div class="container">
       <div class="tabs">
         <div class="tab-links">
@@ -51,17 +122,17 @@
         <div class="tab-content details">
           <div class="details">
             <div class="toolbar">
-              <div class="select-all">
-                <i class="fa-regular fa-square-check"></i> select all
+              <div class="select-all" :class="{selected: allSongsSelected}">
+                <p class="btn-select-all" @click="selectAllSongs"><i :class="allSongsSelected ? 'fa-regular fa-square-check' : 'fa-regular fa-square'"></i> select all</p>
               </div>
               <div class="add-multiple-to-playlist">
-                <button class="btn-add-multiple-to-playlist">Add to Playlist</button>
+                <button class="btn-add-to-playlist" @click="addSongsToPlaylist">Add to Playlist</button>
               </div>
             </div>
             <div class="song-list">
-              <div class="song" v-for="song in songs">
-                <div class="select">
-                  <i class="fa-regular fa-square-check"></i>
+              <div class="song" v-for="song in songs" :id="song.uri">
+                <div class="select-song">
+                  <i :class="song.isSelected ? 'fa-regular fa-check-square' : 'fa-regular fa-square'" @click="selectSong(song.uri)"></i>
                 </div>
                 <div class="image">
                   <img :src="song.albumArt" alt="bad habits">
@@ -70,7 +141,6 @@
                   <p class="title">{{ song.title }}</p>
                   <p>{{ song.artist }}</p>
                   <p>{{ song.album }}</p>
-                  <button class="add-to-playlist">Add to Playlist</button>
                 </div>
               </div>
             </div>
@@ -83,17 +153,10 @@
         <div class="playlist-header">
           <p>Select Playlist</p>
           <button class="create-playlist">Create Playlist</button>
-<!--          <button><i class="fa-solid fa-plus"></i></button>-->
         </div>
-        <div class="playlist-content">
-          <p>Old School tracks</p>
-        </div>
-        <div class="playlist-content">
-          <p>Guitar Learning</p>
-        </div>
-        <div class="playlist-content">
-          <p>Throwbacks</p>
-        </div>
+        <button class="playlist-content" v-for="playlist in playlists" :id="playlist.id" @click="selectPlaylist">
+          {{ playlist.name }}
+        </button>
       </div>
     </div>
   </div>
@@ -128,9 +191,6 @@
     grid-area: details;
   }
   
-  .tab-links{
-  }
-  
   button.tab-link{
     padding: 1rem .5rem;
     border: none;
@@ -147,85 +207,105 @@
     grid-area: playlists;
   }
   
-  .song-list{
-    display: flex;
-    flex-direction: column;
-    gap: 1rem;
-    padding: 1rem 0;
-  }
-  
   .toolbar{
     display: flex;
     flex-direction: row;
     justify-content: space-between;
     align-items: center;
-    padding: 1rem;
+    padding: .6rem 1rem;
     border-radius: 1rem;
     background: #0f1111;
+
+    .btn-select-all{
+      cursor: pointer;
+    }
+
+    .selected {
+      color: #21D754;
+    }
+
+    button.btn-add-to-playlist{
+      background: #21D754;
+      color: #0f1111;
+      padding: .5rem 1rem;
+      border: none;
+      border-radius: .5rem;
+      cursor: pointer;
+      margin-top: .5rem;
+    }
   }
-  
-  .song{
+
+  .song-list{
     display: flex;
-    align-items: center;
-    background: #0f1111;
-    padding: 1rem;
-    border-radius: 1rem;
-    gap: 2rem;
-  }
-  
-  .image img{
-    width: 82px;
-    height: 82px;
-  }
+    flex-direction: column;
+    gap: 1rem;
+    padding: 1rem 0;
 
-  .select{
-    font-size: 1.5rem;
-  }
+    .song{
+      display: flex;
+      align-items: center;
+      background: #0f1111;
+      padding: 1rem;
+      border-radius: 1rem;
+      gap: 2rem;
 
-  .select .fa-square-check{
-    color: #21D754;
-  }
-  
-  .title{
-    font-weight: 700;
-  }
-  
-  button.add-to-playlist, button.btn-add-multiple-to-playlist{
-    background: #21D754;
-    color: #0f1111;
-    padding: .5rem 1rem;
-    border: none;
-    border-radius: .5rem;
-    cursor: pointer;
-    margin-top: .5rem;
+      .image img{
+        width: 82px;
+        height: 82px;
+      }
+
+      .title{
+        font-weight: 700;
+      }
+
+      .select-song{
+        font-size: 1.5rem;
+      }
+
+      .select-song .fa-check-square{
+        color: #21D754;
+        cursor: pointer;
+      }
+    }
   }
   
   .playlists{
     display: flex;
     flex-direction: column;
     gap: 1rem;
+
+    .playlist-header{
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 1rem;
+    }
+
+    .playlist-header button{
+      background: #21D754;
+      color: #0f1111;
+      padding: .5rem 1rem;
+      border: none;
+      border-radius: .5rem;
+      cursor: pointer;
+    }
+
+    .playlist-content{
+      padding: 1rem;
+      border-radius: 1rem;
+      border: none;
+      outline: none;
+      background: #0f1111;
+      cursor: pointer;
+      text-align: center;
+      color: #D7D3CE;
+    }
+
+    .playlist-content.selected{
+      background: #21D754;
+      color: #0f1111;
+    }
   }
   
-  .playlist-header{
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding: 1rem;
-  }
   
-  .playlist-header button{
-    background: #21D754;
-    color: #0f1111;
-    padding: .5rem 1rem;
-    border: none;
-    border-radius: .5rem;
-    cursor: pointer;
-  }
-  
-  .playlist-content{
-    padding: 1rem;
-    border-radius: 1rem;
-    background: #0f1111;
-    cursor: pointer;
-  }
 </style>

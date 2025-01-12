@@ -4,7 +4,7 @@
 
     public interface ISongService
     {
-        Task<List<SpotifyTrackDto>> ReadAllMetaDataAsync();
+        Task<List<SongSearchResultDto>> ReadAllMetaDataAsync();
 
         Task<string> UploadSongs(IFormFile file);
 
