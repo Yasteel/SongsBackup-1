@@ -2,11 +2,6 @@
   import navBar from '../components/nav-bar.vue';
   import { onMounted, ref } from 'vue';
   
-  // Todo: Make Tabs functional and display songs that do not have search results in the second tab
-  // Todo: Add functionality to create playlist
-  // Todo: On Adding to playlist - check if songs exist in playlist and do not add duplicates
-  // Todo: Create modal for request confirmation and alerting user to request status (also for errors such as no playlists selected)
-  
   interface SpotifySongResponse{
     title: string;
     artist: string;
