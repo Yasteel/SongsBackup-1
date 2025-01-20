@@ -1,12 +1,9 @@
 TODO:
 
-1. Create modal for creating playlist
-2. Add functionality to create playlist
-3. On Adding to playlist - check if songs exist in playlist and do not add duplicates
-4. Create modal for request confirmation and alerting user to request status (also for errors such as no playlists selected)
+1. On Adding to playlist - check if songs exist in playlist and do not add duplicates
+2. Create modal for request confirmation and alerting user to request status (also for errors such as no playlists selected)
 
 
-5. Make Tabs functional and display songs that do not have search results in the second tab
-6.  - Enhance search functionality to separate search results by what was found from the search and what was not
+3. Make Tabs functional and display songs that do not have search results in the second tab
+4.  - Enhance search functionality to separate search results by what was found from the search and what was not
     - Make use of Table storage to keep track of what was found and what was not
-    -  
