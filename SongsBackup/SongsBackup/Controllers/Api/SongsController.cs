@@ -91,5 +91,18 @@ namespace SongsBackup.Controllers.Api
             return Ok(new { Message = "Songs added to playlist successfully" });
         }
         
+        [HttpPost("create-playlist")]
+        public async Task<IActionResult> CreatePlaylist([FromBody]CreatePlaylistRequestModel model)
+        {
+            var response = await _spotifyService.CreatePlaylist(model);
+
+            if (response == null)
+            {
+                return BadRequest();
+            }
+            
+            return Ok(new { Message = "Playlist created successfully" });
+        }
+        
     }
 }

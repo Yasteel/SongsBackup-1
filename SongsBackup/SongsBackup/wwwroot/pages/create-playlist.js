@@ -1,0 +1,1 @@
+import{d as s,w as t,c as a,h as o}from"./index.BNjF7G84.js";import{c as e}from"./create-playlist.Df8sIy61.js";const n=e.props?Object.keys(e.props).map(p=>":"+p+'="'+p+'"').join(" "):null,r=s({template:"<Suspense><template #fallback></template><Page "+n+" /></Suspense>",props:e.props,components:{Page:e}});window.customElements.define("create-playlist",t(r,a,o));

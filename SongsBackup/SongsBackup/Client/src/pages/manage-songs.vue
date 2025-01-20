@@ -1,7 +1,8 @@
 <script setup lang="ts">
   import navBar from '../components/nav-bar.vue';
   import { onMounted, ref } from 'vue';
-  
+  import createPlaylist from './create-playlist.vue';
+
   interface SpotifySongResponse{
     title: string;
     artist: string;
@@ -21,6 +22,7 @@
   const playlists = ref<SpotifyPlaylistResponse[]>([]);
   const selectedPlaylist = ref<string>('');
   const allSongsSelected = ref<boolean>(false);
+  const createPlaylistRef = ref(null);
   
   onMounted(async () => {
     const songResult = await getSongs();
@@ -101,6 +103,10 @@
       });
     }
   }
+  
+  const showCreateModal = () => {
+    createPlaylistRef.value?.showModal();
+  }
 
 </script>
 
@@ -147,7 +153,7 @@
       <div class="playlists">
         <div class="playlist-header">
           <p>Select Playlist</p>
-          <button class="create-playlist">Create Playlist</button>
+          <button class="create-playlist" @click="showCreateModal">Create Playlist</button>
         </div>
         <button class="playlist-content" v-for="playlist in playlists" :id="playlist.id" @click="selectPlaylist">
           {{ playlist.name }}
@@ -155,6 +161,7 @@
       </div>
     </div>
   </div>
+  <createPlaylist ref="createPlaylistRef" />
 </template>
 
 <style scoped>
@@ -193,10 +200,15 @@
     color: #D7D3CE;
     cursor: pointer;
   }
+  
+  button:hover{
+    filter: brightness(1.2);
+  }
 
   button.tab-link:hover{
     color: #21D754;
   }
+  
   
   .playlists{
     grid-area: playlists;

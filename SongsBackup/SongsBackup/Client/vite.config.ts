@@ -45,7 +45,9 @@ glob.sync("./src/pages/**/*.vue", { absolute: true }).forEach(filePath => {
 });
 
 export default defineConfig({
-    plugins: [vue()],
+    plugins: [
+        vue()
+    ],
     build: {
         emptyOutDir: true,
         rollupOptions: {
