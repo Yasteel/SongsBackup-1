@@ -121,6 +121,40 @@ namespace SongsBackup.Services
             
             return _mapper.Map<List<UserPlaylistDto>>(playlistResponse.Items);
         }
+        
+        private async Task<PlaylistItems?> GetPlaylistItems(string playlistId)
+        {
+            var token = _sessionService.GetSessionData();
+            var client = _clientFactory.CreateClient();
+            client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token.AccessToken);
+
+            var response = await client.GetAsync($"{SpotifyConstants.BaseUri}playlists/{playlistId}/tracks");
+
+            if (!response.IsSuccessStatusCode)
+            {
+                Console.WriteLine(response.StatusCode);
+                return null;
+            }
+
+            var content = await response.Content.ReadAsStringAsync();
+            var playlistItems = JsonConvert.DeserializeObject<PlaylistItems>(content);
+
+            return playlistItems;
+        }
+
+        private List<string> FilterSongList(PlaylistItems playlistItems, List<string> songUris)
+        {
+            var uris = new List<string>();
+            foreach (var songUri in songUris)
+            {
+                if(!playlistItems.items.Any(item => item.track.uri == songUri))
+                {
+                    uris.Add(songUri);
+                }
+            }
+
+            return uris;
+        }
 
         public async Task<object?> AddToPlaylist(AddToPlaylistDto model)
         {
@@ -131,6 +165,15 @@ namespace SongsBackup.Services
             
             var token = _sessionService.GetSessionData();
             var client = _clientFactory.CreateClient();
+            var playlistItems = await GetPlaylistItems(model.PlaylistId);
+
+            if (playlistItems != null)
+            {
+                model.Uris = FilterSongList(playlistItems, model.Uris);
+            }
+            
+            
+            
             client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token.AccessToken);
 
             var stringContent = new StringContent(JsonConvert.SerializeObject(model.Uris), Encoding.UTF8, "application/json");

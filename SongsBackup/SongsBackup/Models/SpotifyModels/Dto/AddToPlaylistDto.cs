@@ -4,7 +4,7 @@
 
     public class AddToPlaylistDto
     {
-        public string[]? Uris { get; set; }
+        public List<string>? Uris { get; set; }
 
         public string? PlaylistId { get; set; }
     }
