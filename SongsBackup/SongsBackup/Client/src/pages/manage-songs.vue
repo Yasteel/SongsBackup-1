@@ -1,7 +1,8 @@
 <script setup lang="ts">
-  import navBar from '../components/nav-bar.vue';
   import { onMounted, ref } from 'vue';
+  import navBar from '../components/nav-bar.vue';
   import createPlaylist from './create-playlist.vue';
+  import alertModal from './alert-modal.vue'
 
   interface SpotifySongResponse{
     title: string;
@@ -23,6 +24,7 @@
   const selectedPlaylist = ref<string>('');
   const allSongsSelected = ref<boolean>(false);
   const createPlaylistRef = ref(null);
+  const alertRef = ref(null);
   
   onMounted(async () => {
     const songResult = await getSongs();
@@ -87,8 +89,6 @@
   
   const addSongsToPlaylist = () => {
     const selectedSongs = songs.value.filter((song) => song.isSelected).map( song => song.uri);
-    console.log(selectedSongs);
-    console.log(selectedPlaylist.value);
     
     if(selectedPlaylist.value && selectedSongs.length > 0){
       fetch('/api/songs/add-to-playlist', {
@@ -101,6 +101,8 @@
           playlistId: selectedPlaylist.value
         })
       });
+    }else{
+      alertRef.value?.showAlert();
     }
   }
   
@@ -162,6 +164,7 @@
     </div>
   </div>
   <createPlaylist ref="createPlaylistRef" />
+  <alert-modal  ref="alertRef"/>
 </template>
 
 <style scoped>
