@@ -16,11 +16,13 @@
     {
         private readonly IHttpClientFactory _clientFactory;
         private readonly ISessionService _sessionService;
+        private readonly ISpotifyService _spotifyService;
 
-        public AuthController(IHttpClientFactory clientFactory, ISessionService sessionService)
+        public AuthController(IHttpClientFactory clientFactory, ISessionService sessionService, ISpotifyService spotifyService)
         {
-            this._clientFactory = clientFactory;
-            this._sessionService = sessionService;
+            _clientFactory = clientFactory;
+            _sessionService = sessionService;
+            _spotifyService = spotifyService;
         }
         
         // GET
@@ -45,7 +47,7 @@
 
             var queryParams = new Uri(QueryHelpers.AddQueryString(SpotifyConstants.AuthEndpoint, reqParams!));
 
-            return this.Redirect(queryParams.ToString());
+            return Redirect(queryParams.ToString());
         }
         
         [HttpGet("callback")]
@@ -83,15 +85,19 @@
                 var token = JsonConvert.DeserializeObject<SpotifyTokenResponse>(tokenContent);
                 if (token != null) this._sessionService.SetSessionData(token);
 
+                var userProfile = await _spotifyService.GetProfile();
+                if (userProfile != null)
+                {
+                    var userImage = userProfile.Images.AsQueryable().SingleOrDefault(x => x.Width == 300);
+                    _sessionService.SetUserSession(userProfile.DisplayName, userImage == null ? string.Empty : userImage.Url);
+                }
 
-                // var test = this._sessionService.GetSessionData();
-
-                return this.RedirectToAction("Index", "Landing");
+                return RedirectToAction("Index", "Landing");
             }
             catch (Exception ex)
             {
                 Console.WriteLine(ex.Message);
-                return this.BadRequest(ex.Message);
+                return BadRequest(ex.Message);
             }
         }
 

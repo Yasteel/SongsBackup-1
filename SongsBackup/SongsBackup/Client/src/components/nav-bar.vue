@@ -2,18 +2,18 @@
   <div class="navbar">
     <h4><i class="fa-solid fa-music"></i> Songs Backup</h4>
     <div class="circle">
-      <img :src="image" alt="" v-if="image != null" width="36" height="36">
+      <img :src="props.userImage" alt="" v-if="props.userImage != null" width="36" height="36">
       <div class="username">
-        <p>Logged in as: {{ displayName }}</p>
+        <p>Logged in as: {{ props.userName }}</p>
       </div>
     </div>
   </div>
 </template>
 
 <script setup lang="ts">
-   defineProps({
-    displayName: String,
-    image: String
+   const props = defineProps({
+    userName: String,
+    userImage: String
   });
 </script>
 

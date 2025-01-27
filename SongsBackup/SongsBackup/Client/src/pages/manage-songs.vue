@@ -19,6 +19,11 @@
     uri: string; 
   }
   
+  const props = defineProps({
+    userName: String,
+    userImage: String
+  });
+  
   const songs = ref<SpotifySongResponse[]>([]);
   const playlists = ref<SpotifyPlaylistResponse[]>([]);
   const selectedPlaylist = ref<string>('');
@@ -114,7 +119,7 @@
 
 <template>
   <div class="main">
-    <navBar />
+    <navBar :user-name="props.userName" :user-image="props.userImage"/>
     
     <div class="container">
       <div class="tabs">

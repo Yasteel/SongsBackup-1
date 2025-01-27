@@ -12,24 +12,26 @@
     {
         private readonly ISpotifyService _spotifyService;
         private readonly IMapper _mapper;
+        private readonly ISessionService _sessionService;
         private readonly BlobServiceClient _blobServiceClient;
         private const string BlobContainerName = "songs-backup";
 
-        public SongService(IConfiguration configuration, ISpotifyService spotifyService, IMapper mapper)
+        public SongService(IConfiguration configuration, ISpotifyService spotifyService, IMapper mapper, ISessionService sessionService)
         {
             var blobConnection = configuration.GetConnectionString("Azurite");
 
             _blobServiceClient = new (blobConnection);
             _spotifyService = spotifyService;
             _mapper = mapper;
+            _sessionService = sessionService;
         }
         
         public async Task<List<SongSearchResultDto>> ReadAllMetaDataAsync()
         {
-            var blobContainer = this._blobServiceClient.GetBlobContainerClient(BlobContainerName);
+            var blobContainer = _blobServiceClient.GetBlobContainerClient(BlobContainerName);
             List<Items> songsObject = new ();
 
-            await foreach (var blobItem in blobContainer.GetBlobsAsync())
+            await foreach (var blobItem in blobContainer.GetBlobsAsync(prefix: $"{GetUsername()}/"))
             {
                 var blobClient = blobContainer.GetBlobClient(blobItem.Name);
                 var fileMetadata = await ReadMetadataAsync(blobClient);
@@ -64,12 +66,20 @@
         {
             var blobContainerClient = _blobServiceClient.GetBlobContainerClient(BlobContainerName);
             await blobContainerClient.CreateIfNotExistsAsync(PublicAccessType.Blob);
-            var blobClient = blobContainerClient.GetBlobClient(file.FileName);
+
+            var blobName = $"{GetUsername()}/{file.FileName}";
+            var blobClient = blobContainerClient.GetBlobClient(blobName);
             await using (var stream = file.OpenReadStream())
             {
                 await blobClient.UploadAsync(stream, new BlobHttpHeaders { ContentType = file.ContentType });
             }
             return blobClient.Uri.ToString();
+        }
+
+        private string GetUsername()
+        {
+            var userData = _sessionService.GetUserSession();
+            return userData.Username;
         }
     }
 

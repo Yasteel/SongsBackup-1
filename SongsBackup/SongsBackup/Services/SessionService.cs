@@ -1,4 +1,6 @@
-﻿namespace SongsBackup.Services
+﻿using SongsBackup.Models;
+
+namespace SongsBackup.Services
 {
     using System.Globalization;
     
@@ -28,6 +30,21 @@
                 AccessToken = _httpContext.HttpContext?.Session.GetString(nameof(SpotifyTokenResponse.AccessToken))!,
                 RefreshToken = _httpContext.HttpContext?.Session.GetString(nameof(SpotifyTokenResponse.RefreshToken))!,
                 ExpiresAt = _httpContext.HttpContext?.Session.GetString(nameof(SpotifyTokenResponse.ExpiresAt))!
+            };
+        }
+        
+        public void SetUserSession(string username, string userImage)
+        {
+            _httpContext.HttpContext!.Session.SetString("Username", username);
+            _httpContext.HttpContext!.Session.SetString("ProfilePicture", userImage);
+        }
+        
+        public UserSession GetUserSession()
+        {
+            return new()
+            {
+                Username = _httpContext.HttpContext?.Session.GetString("Username")!,
+                UserImage = _httpContext.HttpContext?.Session.GetString("ProfilePicture")!
             };
         }
     }

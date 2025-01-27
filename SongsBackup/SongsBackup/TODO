@@ -1,8 +1,5 @@
 TODO:
 
-1. Add user specific containers
-
-
-2. Make Tabs functional and display songs that do not have search results in the second tab
-3.  - Enhance search functionality to separate search results by what was found from the search and what was not
+1. Make Tabs functional and display songs that do not have search results in the second tab
+2.  - Enhance search functionality to separate search results by what was found from the search and what was not
     - Make use of Table storage to keep track of what was found and what was not
