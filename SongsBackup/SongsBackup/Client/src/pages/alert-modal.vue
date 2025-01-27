@@ -1,12 +1,7 @@
 <script setup lang="ts">
   import { ref } from 'vue';
   
-  // const props = defineProps({
-  //   isConfirmationDialogue: Boolean,
-  // });
-  
-  
-  const isVisible = ref<boolean>(true);
+  const isVisible = ref<boolean>(false);
   
   const closeAlert = () => {
     isVisible.value = false;
