@@ -37,7 +37,7 @@
                 var fileMetadata = await ReadMetadataAsync(blobClient);
                 var tracks = await _spotifyService.SearchSongsAsync(fileMetadata);
 
-                if (tracks != default)
+                if (tracks != null && tracks.Count != 0)
                 {
                     songsObject.Add(tracks.First());
                 }

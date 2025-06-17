@@ -1,6 +1,6 @@
 import vue from '@vitejs/plugin-vue';
 import fs from "fs";
-import glob from 'glob';
+import { glob } from 'glob';
 import path from "path";
 import { defineConfig } from 'vite';
 // import cssInjectedByJsPlugin from 'vite-plugin-css-injected-by-js';
