@@ -13,12 +13,12 @@
         public async Task<IActionResult> Index(HomeViewModel? viewModel)
         {
             var profile = await spotifyService.GetProfile();
-            return this.View(this.BuildViewModel(profile));
+            return View(BuildViewModel(profile));
         }
         
         public IActionResult Connect()
         {
-            return this.RedirectToAction("Login", "Auth");
+            return RedirectToAction("Login", "Auth");
         }
         
         private HomeViewModel BuildViewModel(ProfileResponse? profile)
