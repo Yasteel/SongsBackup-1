@@ -1,22 +1,23 @@
-using Microsoft.AspNetCore.Mvc;
-using SongsBackup.Interfaces;
-using SongsBackup.ViewModel;
-
-namespace SongsBackup.Controllers;
-
-public class ManageSongsController : Controller
+namespace SongsBackup.Controllers
 {
-    private readonly ISessionService _sessionService;
+    using Microsoft.AspNetCore.Mvc;
+    using Interfaces;
+    using ViewModel;
 
-    public ManageSongsController(ISessionService sessionService)
+    public class ManageSongsController : Controller
     {
-        _sessionService = sessionService;
-    }
+        private readonly ISessionService _sessionService;
 
-    public IActionResult Index()
-    {
-        var userData = _sessionService.GetUserSession();
-        
-        return View(new HomeViewModel(){ DisplayName = userData.Username, ProfileImage = userData.UserImage });
+        public ManageSongsController(ISessionService sessionService)
+        {
+            _sessionService = sessionService;
+        }
+
+        public IActionResult Index()
+        {
+            var userData = _sessionService.GetUserSession();
+
+            return View(new HomeViewModel() { DisplayName = userData.Username, ProfileImage = userData.UserImage });
+        }
     }
 }
